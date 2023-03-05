@@ -2,14 +2,15 @@ import socket
 import threading
 
 import constants
-import messages
+import connection as c
 
 
 def handle_client(conn, addr):
     print(f'{addr} connected')
     
     try:
-        messages.authenticate(conn)
+        connection = c.Connection(conn)
+        connection.authenticate()
     except Exception as e:
         pass
 

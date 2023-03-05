@@ -1,10 +1,5 @@
 IP = '127.0.0.1'
 PORT = 5566
-FORMAT = 'utf-8'
-MSG_END = '\a\b'
-
-SIZE_USERNAME = 21
-
 
 KEY_PAIRS = [
     (23019, 32037),
@@ -13,3 +8,6 @@ KEY_PAIRS = [
     (16443, 29533),
     (18189, 21952)
 ]
+
+
+HASH_SIZE = 65536
