@@ -38,7 +38,7 @@ class Connection:
         return 0
     
 
-    def __to_int(self, num):
+    def to_int(self, num):
         try:
             num = int(num)
         except:
@@ -49,12 +49,11 @@ class Connection:
 
     def __get_username_hash(self):
         username = self.get(messages.CLIENT_USERNAME_LENGTH)
-        print(username)
         return (sum([ord(char) for char in username]) * 1000) % constants.HASH_SIZE
     
 
     def __get_key_pair(self):
-        key_id = self.__to_int(self.get(messages.CLIENT_KEY_ID_LENGTH))
+        key_id = self.to_int(self.get(messages.CLIENT_KEY_ID_LENGTH))
 
         # is not an int
         
@@ -73,7 +72,7 @@ class Connection:
     
 
     def __get_hash_from_client(self):
-        hash_from_client = self.__to_int(self.get(messages.CLIENT_CONFIRMATION_LENGHT))
+        hash_from_client = self.to_int(self.get(messages.CLIENT_CONFIRMATION_LENGHT))
 
         return hash_from_client
 
@@ -119,6 +118,7 @@ class Connection:
     def main_loop(self):
         try:
             self.authenticate()
+            self.new_robot()
 
         except exceptions.ServerSyntaxError:
             self.send(messages.SERVER_SYNTAX_ERROR)
