@@ -3,6 +3,7 @@ import socket
 import constants
 import exceptions
 import messages
+import robot
 
 class Connection:
     __MSG_END = '\a\b'
@@ -11,6 +12,9 @@ class Connection:
     def __init__(self, conn):
         self.conn = conn
         self.robot = None
+
+        self.main_loop()
+        
 
 
     def __check_syntax(self, msg):
@@ -76,7 +80,6 @@ class Connection:
     
     def __confirm_hashes(self, client_hash, hash_from_client):
         if client_hash != hash_from_client:
-            self.send(messages.SERVER_LOGIN_FAILED)
             raise exceptions.ServerLoginFailed
         
         self.send(messages.SERVER_OK)
@@ -108,6 +111,26 @@ class Connection:
         msg = self.__check_syntax(msg)
         
         return msg
+    
+    def new_robot(self):
+        r = robot.Robot(self)
+    
+
+    def main_loop(self):
+        try:
+            self.authenticate()
+
+        except exceptions.ServerSyntaxError:
+            self.send(messages.SERVER_SYNTAX_ERROR)
+        except exceptions.ServerLogicError:
+            self.send(messages.SERVER_LOGIC_ERROR)
+        except exceptions.ServerKeyOutOfRange:
+            self.send(messages.SERVER_KEY_OUT_OF_RANGE)
+        except exceptions.ServerLoginFailed:
+            self.send(messages.SERVER_LOGIN_FAILED)
+
+        finally:
+            self.conn.close()
     
 
     def authenticate(self):

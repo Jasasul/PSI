@@ -3,16 +3,13 @@ import threading
 
 import constants
 import connection as c
+import exceptions
 
 
 def handle_client(conn, addr):
     print(f'{addr} connected')
     
-    try:
-        connection = c.Connection(conn)
-        connection.authenticate()
-    except Exception as e:
-        pass
+    connection = c.Connection(conn)
 
 
 
