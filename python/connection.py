@@ -60,7 +60,7 @@ class Connection:
         # is not in 0 - 5
         if key_id < 0 and key_id > 5:
             raise exceptions.ServerKeyOutOfRange
-
+        
         return constants.KEY_PAIRS[key_id]
     
 

@@ -11,3 +11,8 @@ KEY_PAIRS = [
 
 
 HASH_SIZE = 65536
+
+NORTH = (1, 0)
+WEST = (-1, 0)
+EAST = (1, 0)
+SOUTH = (0, -1)
