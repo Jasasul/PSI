@@ -11,6 +11,7 @@ class Connection:
 
     def __init__(self, conn):
         self.conn = conn
+        self.conn.settimeout(constants.TIMEOUT)
         self.robot = None
 
         self.main_loop()
@@ -27,12 +28,15 @@ class Connection:
     def __check_recharge(self, msg):
         # checks if the robot is recharging
         if msg == messages.CLIENT_RECHARGING:
+            self.conn.settimeout(constants.TIMEOUT_RECHARGING)
             new_msg = self.get(messages.CLIENT_FULL_POWER_LENGTH)
 
             if new_msg != messages.CLIENT_FULL_POWER:
                 # other message than CLIENT_FULL_POWER is sent
                 raise exceptions.ServerLogicError
             
+            self.conn.settimeout(constants.TIMEOUT)
+
             return 1
         
         return 0
@@ -58,7 +62,7 @@ class Connection:
         # is not an int
         
         # is not in 0 - 5
-        if key_id < 0 and key_id > 5:
+        if key_id < 0 or key_id > 4:
             raise exceptions.ServerKeyOutOfRange
         
         return constants.KEY_PAIRS[key_id]
@@ -122,12 +126,24 @@ class Connection:
 
         except exceptions.ServerSyntaxError:
             self.send(messages.SERVER_SYNTAX_ERROR)
+            print('SYNTAX ERROR')
         except exceptions.ServerLogicError:
             self.send(messages.SERVER_LOGIC_ERROR)
+            print('LOGIC ERROR')
         except exceptions.ServerKeyOutOfRange:
             self.send(messages.SERVER_KEY_OUT_OF_RANGE)
+            print('KEY OUT OF RANGE')
         except exceptions.ServerLoginFailed:
             self.send(messages.SERVER_LOGIN_FAILED)
+            print('LOGIN FAILED')
+        except exceptions.PickUpSecret:
+            print('PICK UP')
+            self.send(messages.SERVER_PICK_UP)
+            msg = self.get(messages.CLIENT_MESSAGE_LENGTH)
+            print(msg)
+            self.send(messages.SERVER_LOGOUT)
+        except TimeoutError:
+            pass
 
         finally:
             self.conn.close()

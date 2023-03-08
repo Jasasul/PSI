@@ -1,11 +1,13 @@
 import messages
 import constants
+import exceptions
 
 class Robot:
     def __init__(self, connection):
         self.connection = connection
         self.heading = (None, None)
         self.coords = (None, None)
+        self.obstacle = False
 
         self.determine_heading()
         self.move_to_x_axis()
@@ -15,9 +17,10 @@ class Robot:
     def __update_coords(self):
         msg = self.connection.get(messages.CLIENT_OK_LENGTH)[2:]
         self.coords = tuple([self.connection.to_int(num) for num in msg.split()])
-        x, y = msg.split()
-        x = self.connection.to_int(x)
-        y = self.connection.to_int(y)
+        
+        if self.coords == (0, 0):
+            raise exceptions.PickUpSecret
+
         print(f'NEW COORDS: {self.coords}')
     
 
@@ -36,6 +39,10 @@ class Robot:
         print(f'FIRST HEADING: {self.heading}')
     
 
+    def navigate_to_center(self):
+        pass
+    
+
     def __turn_to_face_x_axis(self):
         if self.coords[1] < 0:
             while self.heading != constants.NORTH:
@@ -51,7 +58,10 @@ class Robot:
 
         while self.coords[1] != 0:
             self.__move()
-    
+
+            if self.obstacle:
+                self.__avoid_obstacle()
+            
 
     def __turn_to_face_y_axis(self):
         if self.coords[0] < 0:
@@ -63,19 +73,38 @@ class Robot:
                 self.__turn_right()
     
 
+    def __avoid_obstacle(self):
+        self.__turn_left()
+        self.__move()
+        self.__move()
+        self.__turn_right()
+        self.__move()
+        self.__move()
+    
+
     def move_to_y_axis(self):
         self.__turn_to_face_y_axis()
 
         while self.coords[0] != 0:
             self.__move()
+        
+
+        if self.obstacle:
+            self.__avoid_obstacle()
+        
 
     def __move(self):
+        last_coords = self.coords
         self.connection.send(messages.SERVER_MOVE)
         self.__update_coords()
+        if self.coords == last_coords:
+            self.obstacle == True
+        else:
+            self.obstacle == False
 
 
     def __turn_left(self):
-        self.connection.send(messages.SERVER_TURN_RIGHT)
+        self.connection.send(messages.SERVER_TURN_LEFT)
         
         if self.heading == constants.EAST:
             self.heading = constants.NORTH
@@ -86,11 +115,13 @@ class Robot:
         else:
             self.heading = constants.EAST
         
+        self.__update_coords()
+        
         print(f'NEW HEADING: {self.heading}')
    
 
     def __turn_right(self):
-        self.connection.send(messages.SERVER_TURN_LEFT)
+        self.connection.send(messages.SERVER_TURN_RIGHT)
 
         if self.heading == constants.EAST:
             self.heading = constants.SOUTH
@@ -100,5 +131,7 @@ class Robot:
             self.heading = constants.NORTH
         else:
             self.heading = constants.EAST
+
+        self.__update_coords()
 
         print(f'NEW HEADING: {self.heading}')

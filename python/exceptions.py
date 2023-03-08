@@ -9,3 +9,6 @@ class ServerLoginFailed(Exception):
 
 class ServerKeyOutOfRange(Exception):
     pass
+
+class PickUpSecret(Exception):
+    pass
